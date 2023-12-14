@@ -1,0 +1,47 @@
+# 앱이나 파일의 버전이 아님 사용하려는 도커컴포즈사양의 버전을 지정
+version: "3.8"
+services:
+  mongodb:
+    image: "mongo"
+    volumes:
+      - data:/data/db
+    # environment:
+    # - MONGO_INITDB_ROOT_USERNAME=kjw
+    # - MONGO_INITDB_ROOT_PASSWORD=secret
+    env_file:
+      - ./.env
+    # 많은경우 networks를 추가하는 해당작업을 수행할 필요 없다. 도커가 컴포즈파일에 특정된 모든 서비스에 대해 환경을 자동으로 생성하고 모든 서비스를 즉시 해당 네트워크에 추가하기 때문이다
+    # networks:
+    # - goals-net
+  backend:
+    build: ./backend
+    # build:
+    #   context: ./backend
+    #   dockerfile: Dockerfile dockerfile의 명이 dockerfile이 아닐때
+    #   args :  dockerfile이 ARG사용시 인수전달가능
+    #     some-arg: 1
+    ports:
+      - "80:80"
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./.env
+    # 동시에 여러 서비스가 생기는데 이미 실행되고 있는 서비스에 의존이 필요할 때
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+    stdin_open: true # -it 연결
+    tty: true # 터미널에 연결
+    depends_on:
+      - backend
+# 도커가 service를 위해 생성해야하는 named 볼륨을 인식하기 위해 필요한 구문
+volumes:
+  data:
+  logs:
