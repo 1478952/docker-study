@@ -3,6 +3,8 @@ version: "3.8"
 services:
   mongodb:
     image: "mongo"
+    # 컨테이너명 지정을 하지 않으면 폴더명 + 서비스명 + 인덱스 로 지정됨
+    container_name: mongodb
     volumes:
       - data:/data/db
     # environment:
